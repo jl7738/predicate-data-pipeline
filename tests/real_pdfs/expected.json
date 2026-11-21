@@ -1,0 +1,9 @@
+{
+  "K191717": {"primary": "K152876", "additional": [], "reference": ["K142819"], "ifu_contains": "sheath"},
+  "K243175": {"primary": "K200134", "additional": [], "ifu_contains": "urethra"},
+  "K121550": {"primary": "K120729", "additional": ["K050885", "K060245"]},
+  "K982447": {"primary": "K953510"},
+  "K991039": {"primary": "K925039"},
+  "K991190": {"primary": "K965007"},
+  "K993226": {"primary": "K810216"}
+}

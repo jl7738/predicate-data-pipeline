@@ -1,0 +1,19 @@
+# Pilot on one specialty (proposal: "scaled up from a pilot on one specialty").
+# Small thresholds: the pilot cannot reach full-run split sizes, so the audit PROJECTS full-run
+# sizes from the pilot's conversion rates instead of failing on raw counts.
+pilot:
+  panel: RA
+  n_subjects: 400
+  expand_predicates: true
+expected:
+  enabled: false
+checks:
+  min_subjects: {train: 100, dev: 20, test: 20}
+  min_slice_n: 10
+  min_pair_coverage: 0.80
+  min_retrievable_rate: 0.80
+  # A pilot cannot reach the full-run ±0.03 (needs ~900 test queries). This only catches a broken split;
+  # the full-run CI is projected in reports/sizing.md and checked for real by the full run.
+  max_ci_halfwidth: 0.20
+baselines:
+  max_queries: 500

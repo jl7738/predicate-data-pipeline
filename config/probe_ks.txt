@@ -1,0 +1,10 @@
+# K-numbers for `python -m predx.cli probe --ks-file config/probe_ks.txt` (one per line, # comments allowed).
+# Run it on the VM (needs access to accessdata.fda.gov). Add 10-20 more by hand, deliberately varied:
+#   - a 2024-2025 clearance (modern digital PDF)
+#   - one from ~2016-2019
+#   - one from the 2000s (older, often scanned / image-only)
+#   - one with TWO or more predicates, one with a "reference device"
+#   - one that has a 510(k) STATEMENT instead of a summary (should be dropped, not parsed)
+#   - one from a different specialty than the others (cardio, ortho, software...)
+K243175   # 2024, Jimushi urinary catheter: single predicate listed in a "Predicate device information" section
+K191717   # 2019: sheath/dilator; predicate K152876 plus a reference device K142819 that must NOT become a predicate

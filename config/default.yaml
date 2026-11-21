@@ -1,0 +1,148 @@
+# Default configuration. Override with:  --config config/pilot.yaml  and/or  --set a.b.c=value
+# Everything the downstream modelling code needs to stay consistent (similarity, k values,
+# prompts, max lengths) is recorded here and copied into data/dataset/dataset_card.json.
+
+paths:
+  data_dir: data
+
+# Used in the HTTP User-Agent when downloading from FDA. Set here or via env CONTACT_EMAIL.
+contact_email: ""
+seed: 13
+
+openfda:
+  download_index: "https://api.fda.gov/download.json"
+  fallback_url: "https://download.open.fda.gov/device/510k/device-510k-0001-of-0001.json.zip"
+  timeout_s: 600
+
+fetch:
+  base_url: "https://www.accessdata.fda.gov/cdrh_docs"
+  threads: 8
+  requests_per_second: 4.0     # be polite; FDA is a public server
+  timeout_s: 60
+  max_retries: 5
+  trust_env: true              # honour HTTP(S)_PROXY; tests set false
+  keep_pdfs: true              # false = delete each PDF once its text is cached (saves disk)
+
+text:
+  workers: 0                   # 0 = all CPU cores
+  max_pages: 40                # only the first N pages are read/OCR'd (summary is near the front)
+  ocr:
+    enabled: true
+    dpi: 300
+    lang: eng
+    psm: 3
+    preprocess: median_gray    # none | median_gray | median_otsu  (see pdftext.preprocess_png for the measurements)
+    k_reread: true             # re-read every K-number token from an upscaled crop with a digits-only whitelist, majority vote (+~20% OCR time)
+    min_alnum_chars: 60        # a page with fewer alphanumerics than this is treated as scanned
+    max_pages: 25              # cap on OCR'd pages per document
+    timeout_s: 180
+
+parse:
+  workers: 0
+  min_words: {ifu: 8, description: 15}
+  desc_fallback: summary_body  # none | summary_body: old summaries without a 'Device Description' heading use the summary page (desc_source=summary_body)
+  max_section_chars: 6000      # runaway-section guard
+  ifu_preference: [form, summary]   # prefer the FDA Indications-for-Use form page, else summary heading
+  first_other_fallback: true   # if no labelled predicate found, fall back to first-other-number (Wu et al.)
+
+corpus:
+  decision_code_prefix: "SE"   # only substantially-equivalent decisions can be predicates
+  usable_policy: both          # both = need indications AND description; ifu_only = indications suffice
+  min_decision_date: null      # e.g. "1996-01-01" to cut the old, scanned tail of the corpus
+
+splits:                        # inclusive ISO dates, split by the SUBJECT's decision date
+  train: ["2015-01-01", "2023-12-31"]
+  dev:   ["2024-01-01", "2024-12-31"]
+  test:  ["2025-01-01", "2026-12-31"]
+
+leakage:
+  mask_level: standard         # none | standard | strict   (see predx/leakage.py)
+  name_min_chars: 8
+  name_min_tokens: 2
+
+pilot:
+  panel: RA                    # review advisory committee code for the pilot specialty
+  n_subjects: 400
+  expand_predicates: true      # also fetch the predicates the pilot subjects cite (1 hop)
+
+# Numbers quoted in the proposal. The audit WARNs if the downloaded metadata disagrees
+# (openFDA is refreshed monthly, so small drift is normal).
+expected:
+  enabled: true
+  tolerance: 0.05
+  total_decisions: 176529
+  with_summary: 94143
+  subjects_2015_2026: 34600
+
+# Models. Reviewer: include an UN-fine-tuned baseline for EACH trained model.
+# Similarity is fixed to cosine on L2-normalised embeddings so before/after fine-tuning is comparable.
+models:
+  - name: embeddinggemma-300m
+    hf_id: google/embeddinggemma-300m      # gated: accept the licence on Hugging Face, set HF_TOKEN
+    max_len: 256
+    query_prefix: "task: search result | query: "
+    doc_prefix: "title: none | text: "
+    dtype: bf16                             # model card: activations do not support float16
+    zero_shot_baseline: true
+  - name: modernbert-base
+    hf_id: answerdotai/ModernBERT-base
+    max_len: 256
+    query_prefix: ""
+    doc_prefix: ""
+    pooling: mean
+    zero_shot_baseline: true
+  # Optional matched-architecture control (reviewer: model differences are confounded by architecture/size).
+  # A retrieval-pretrained ModernBERT-based embedder lets you isolate "retrieval pretraining" from "architecture".
+  # Check the Hugging Face page and licence before relying on it.
+  # - name: gte-modernbert-base
+  #   hf_id: Alibaba-NLP/gte-modernbert-base
+  #   max_len: 256
+  #   query_prefix: ""
+  #   doc_prefix: ""
+  #   zero_shot_baseline: true
+
+input_template:
+  ifu_header: "Indications for Use: "
+  desc_header: "Device Description: "
+  separator: "\n"
+
+truncation:
+  max_len_grid: [128, 256, 512, 1024]
+  policy: budget               # head | budget   (budget reserves a share of tokens for the indications)
+  ifu_budget_tokens: 128
+  threshold_pct: 5.0           # accept a max_len if <= this % of docs lose description text
+  chunk: {size: 256, stride: 128}   # fallback if truncation is unacceptable: max-pool over chunks
+  allow_approx_tokenizer: true # if the real tokenizer cannot be loaded, report with an APPROX estimate
+
+eval_spec:
+  similarity: cosine           # primary. Embeddings are L2-normalised before scoring.
+  similarity_ablation: [dot]   # cheap once embeddings exist (reviewer suggestion)
+  recall_k: [1, 5, 10, 50]
+  hit_k: [1, 5, 10, 15]
+  ndcg_k: 10
+  bootstrap: 1000
+  candidate_rule: "devices in the corpus with decision_date strictly before the subject's decision_date"
+  report_as: "recovery of historical citations (an uncited device is not necessarily an unsuitable predicate)"
+
+baselines:
+  max_queries: 3000
+  bm25: {k1: 1.2, b: 0.75}
+
+checks:                        # thresholds for PASS / WARN / FAIL in the audit
+  min_subjects: {train: 5000, dev: 1000, test: 1000}
+  min_retrievable_rate: 0.90   # share of subjects with >=1 gold predicate present in the corpus
+  min_pair_coverage: 0.90      # share of (subject, predicate) pairs whose predicate is in the corpus
+  min_fetch_rate: 0.95
+  min_text_rate: 0.95
+  min_sections_rate: 0.85
+  min_pred_rate: 0.80
+  max_truncated_pct: 5.0
+  max_ci_halfwidth: 0.03
+  min_slice_n: 30
+  assumed_recall10: 0.30       # used for power calculations until a measured baseline exists
+  max_gold_name_leak_rate: 0.01
+  fail_fraction: 0.75          # FAIL if a "min" metric is below this fraction of its threshold
+
+labeling:
+  n: 100
+  flagged_fraction: 0.3        # share of the sample drawn from low-confidence extractions

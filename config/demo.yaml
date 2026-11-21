@@ -1,0 +1,15 @@
+# Offline demo on synthetic data (python -m predx.cli demo). Nothing here touches the network.
+paths:
+  data_dir: data_demo
+expected:
+  enabled: false
+parse:
+  min_words: {ifu: 8, description: 15}
+  desc_fallback: none   # synthetic "no_desc" documents must stay unusable; the fallback has its own unit test
+checks:
+  min_subjects: {train: 150, dev: 20, test: 40}
+  min_slice_n: 10
+truncation:
+  allow_approx_tokenizer: true
+baselines:
+  max_queries: 500
