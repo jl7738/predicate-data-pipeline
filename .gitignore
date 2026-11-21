@@ -1,0 +1,25 @@
+# data, outputs and secrets (never commit these)
+/data/
+/data_*/
+logs/
+.env
+.autoresume
+.full_done
+*.zip
+
+# the 10 real FDA PDFs in tests/real_pdfs/ ARE committed on purpose: they are public FDA documents
+# (~2.8 MB) and tests/real_pdfs/expected.json is the regression check for the parser.
+
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# editors / OS
+.DS_Store
+.idea/
+.vscode/

@@ -123,7 +123,11 @@ replaces them. `docs/DATA_SIZING.md` has the full tables, the data structure, th
 
 ## 3. Google Compute Engine
 
-**No cloud credits yet?** `notebooks/predx_colab_test.ipynb` runs the whole test ladder (unit tests, synthetic ETL, 10 real PDFs, OCR stress, live FDA probe, mini pilot, hand check) on free Google Colab.
+**No cloud credits yet?** `notebooks/predx_colab_test.ipynb` (open it in Colab via File → Open notebook → GitHub, then set `REPO_GIT_URL` in the first cell) runs the whole test ladder (unit tests, synthetic ETL, 10 real PDFs, OCR stress, live FDA probe, mini pilot, hand check) on free Google Colab.
+
+**Shared Google Cloud project, authorising teammates, results in a bucket, reruns against the same data: [`docs/GCP_SHARED_RUNBOOK.md`](docs/GCP_SHARED_RUNBOOK.md).**
+
+**Full run, step by step (settings, VM, monitoring, judging, fixing): [`docs/RUNBOOK_FULL.md`](docs/RUNBOOK_FULL.md).**
 
 **Shared team project, probe/pilot step by step, and how to judge them: [`docs/GCP_TEAM.md`](docs/GCP_TEAM.md)** (`scripts/gcp_team_setup.sh`, `scripts/check_run.sh`).
 
@@ -139,7 +143,7 @@ On the VM:
 
 ```bash
 cd ~/predicate-data
-CONTACT_EMAIL=you@columbia.edu GCS_BUCKET=my-unique-bucket HF_TOKEN=hf_xxx ./scripts/vm_setup.sh   # apt + venv + tests + demo
+CONTACT_EMAIL=you@example.com GCS_BUCKET=my-unique-bucket HF_TOKEN=hf_xxx ./scripts/vm_setup.sh   # apt + venv + tests + demo
 tmux new -s predx
 ./scripts/run_pilot.sh            # PANEL=RA N=400 by default
 ./scripts/run_full.sh             # later; resumable

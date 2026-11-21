@@ -11,7 +11,7 @@ Cloud Shell is per person (not shareable); the VM and the bucket are what you sh
    ```bash
    unzip -q predicate-data.zip && cd predicate-data
    PROJECT=coms4705-predx BUCKET=coms4705-predx-data \
-   TEAM="a@columbia.edu,b@columbia.edu,c@columbia.edu" bash scripts/gcp_team_setup.sh
+   TEAM="teammate1@example.com,teammate2@example.com,teammate3@example.com" bash scripts/gcp_team_setup.sh
    ```
    (enables APIs, grants each teammate `roles/editor` (override with `ROLE=`), creates the shared bucket.)
 4. If the console refuses (university-managed account), use a personal Google account for the project or ask course staff for credits.
@@ -19,7 +19,7 @@ Cloud Shell is per person (not shareable); the VM and the bucket are what you sh
 ## B. Probe on real PDFs (about 10 min). Cloud Shell is enough
 ```bash
 cd ~/predicate-data && bash scripts/vm_setup.sh          # apt + venv + tests + demo
-echo 'CONTACT_EMAIL=you@columbia.edu' >> .env
+echo 'CONTACT_EMAIL=you@example.com' >> .env
 echo 'GCS_BUCKET=coms4705-predx-data' >> .env
 nano config/probe_ks.txt                                  # add 15-20 varied K-numbers (eras, product codes, one statement-only)
 bash scripts/run_probe.sh
@@ -36,7 +36,7 @@ Judge it:
 PROJECT=coms4705-predx BUCKET=coms4705-predx-data MACHINE=e2-standard-4 DISK_GB=60 bash scripts/gcp_create_vm.sh
 gcloud compute scp --recurse --zone=us-central1-a ../predicate-data predx-extract:~/
 gcloud compute ssh predx-extract --zone=us-central1-a       # teammates: console -> Compute Engine -> SSH
-cd ~/predicate-data && CONTACT_EMAIL=you@columbia.edu GCS_BUCKET=coms4705-predx-data bash scripts/vm_setup.sh
+cd ~/predicate-data && CONTACT_EMAIL=you@example.com GCS_BUCKET=coms4705-predx-data bash scripts/vm_setup.sh
 tmux new -s predx                                           # job survives a closed browser; re-attach: tmux attach -t predx
 PANEL=RA N=400 bash scripts/run_pilot.sh
 bash scripts/check_run.sh

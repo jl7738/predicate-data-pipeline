@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run ON the VM, once, from the repo root.  Installs system packages + a venv, runs the offline tests and the demo.
-#   CONTACT_EMAIL=you@columbia.edu GCS_BUCKET=my-bucket HF_TOKEN=hf_xxx ./scripts/vm_setup.sh
+#   CONTACT_EMAIL=you@example.com GCS_BUCKET=my-bucket HF_TOKEN=hf_xxx ./scripts/vm_setup.sh
 set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_DIR"

@@ -2,7 +2,7 @@
 # One-time TEAM setup of a shared GCP project. Run from Cloud Shell by the project owner (not on the VM).
 #
 #   PROJECT=coms4705-predx BUCKET=coms4705-predx-data \
-#   TEAM="julianna@columbia.edu,saumil@columbia.edu,keyvan@columbia.edu" ./scripts/gcp_team_setup.sh
+#   TEAM="teammate1@example.com,teammate2@example.com,teammate3@example.com" ./scripts/gcp_team_setup.sh
 #
 # What it does: selects the project, enables the APIs, gives each teammate a role, creates the shared results bucket.
 # What it cannot do: link billing and create the budget alert (do those in the console; the printout says where).
